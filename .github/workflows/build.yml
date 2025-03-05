@@ -1,0 +1,95 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch or Tag (default: main)"
+        required: true
+        default: main
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, macos-13]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Clone Repository
+        run: |
+          git clone --depth 1 --branch ${{ github.event.inputs.ref }} https://${{ secrets.GH_PAT }}@github.com/${{ secrets.BUILD_REPO }} repo
+          cd repo
+          git submodule update --init --recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Dependencies Python
+        working-directory: repo
+        run: |
+          pip install --upgrade pip pyinstaller
+          pip install -r services/requirements.txt
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies Node.js
+        working-directory: repo
+        run: npm install
+
+      - name: Build Python Service
+        working-directory: repo
+        run: npm run python:build
+
+      - name: Build Electron App
+        working-directory: repo
+        run: npm run make
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tool-${{ matrix.os }}-${{ github.event.inputs.ref }}
+          path: repo/out/make/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: releases
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          files: releases/**/*
+          tag_name: ${{ github.event.inputs.ref }}
+          name: Tool - ${{ github.event.inputs.ref }}
+          draft: false
+          prerelease: false
+          preserve_order: true
+          repository: ${{ secrets.PUBLISH_REPO }}
+
+  cleanup:
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Delete All Artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: '*'
