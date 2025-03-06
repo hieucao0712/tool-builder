@@ -10,17 +10,34 @@ on:
         default: main
       version:
         description: "Version (default: latest)"
-        required: true
+        required: false
         type: string
         default: latest
 
 jobs:
+  pre-build:
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.set-release-tag.outputs.release_tag }}
+    steps:
+      - name: Determine Release Tag
+        id: set-release-tag
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION="${{ github.event.inputs.ref }}"
+          fi
+          echo "Using release tag: $VERSION"
+          echo "release_tag=$VERSION" >> $GITHUB_OUTPUT
+
   build:
+    needs: pre-build
     strategy:
       matrix:
         os: [windows-latest, macos-latest, macos-13]
     runs-on: ${{ matrix.os }}
-
+    outputs:
+      release_tag: ${{ needs.pre-build.outputs.release_tag }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -62,7 +79,7 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: tool-${{ matrix.os }}-${{ github.event.inputs.version }}
+          name: tool-${{ matrix.os }}-${{ needs.pre-build.outputs.release_tag }}
           path: repo/out/make/*
 
   release:
@@ -83,8 +100,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           files: releases/**/*
-          tag_name: ${{ github.event.inputs.version }}
-          name: Tool - ${{ github.event.inputs.version }}
+          tag_name: ${{ needs.build.outputs.release_tag }}
+          name: Tool - ${{ needs.build.outputs.release_tag }}
           draft: false
           prerelease: false
           preserve_order: true
