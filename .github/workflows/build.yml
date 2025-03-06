@@ -6,7 +6,13 @@ on:
       ref:
         description: "Branch or Tag (default: main)"
         required: true
+        type: string
         default: main
+      version:
+        description: "Version (default: latest)"
+        required: true
+        type: string
+        default: latest
 
 jobs:
   build:
@@ -56,7 +62,7 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: tool-${{ matrix.os }}-${{ github.event.inputs.ref }}
+          name: tool-${{ matrix.os }}-${{ github.event.inputs.version }}
           path: repo/out/make/*
 
   release:
@@ -77,8 +83,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           files: releases/**/*
-          tag_name: ${{ github.event.inputs.ref }}
-          name: Tool - ${{ github.event.inputs.ref }}
+          tag_name: ${{ github.event.inputs.version }}
+          name: Tool - ${{ github.event.inputs.version }}
           draft: false
           prerelease: false
           preserve_order: true
