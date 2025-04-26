@@ -38,8 +38,9 @@ jobs:
       - name: Install Dependencies Python
         working-directory: repo
         run: |
-          pip install --upgrade pip pyinstaller
+          python -m pip install --upgrade pip
           pip install -r services/requirements.txt
+          pip install pyinstaller
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
