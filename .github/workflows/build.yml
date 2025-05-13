@@ -11,9 +11,13 @@ on:
 
 jobs:
   build:
+    name: Build
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, macos-13]
+        os:
+          - windows-latest
+          - macos-latest
+          - macos-13
     runs-on: ${{ matrix.os }}
     outputs:
       tag: ${{ steps.set-tag.outputs.tag }}
@@ -31,8 +35,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-
+          python-version: "3.11"
       - name: Install Dependencies Python
         working-directory: repo
         run: |
@@ -88,6 +91,7 @@ jobs:
           path: repo/out/make/*
 
   release:
+    name: Release
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -114,11 +118,14 @@ jobs:
           repository: ${{ secrets.PUBLISH_REPO }}
 
   cleanup:
-    needs: [build, release]
+    name: Cleanup
+    needs:
+      - build
+      - release
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Delete All Artifacts
         uses: geekyeggo/delete-artifact@v5
         with:
-          name: '*'
+          name: "*"
