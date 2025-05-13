@@ -17,6 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     outputs:
       tag: ${{ steps.set-tag.outputs.tag }}
+      latest: ${{ steps.set-tag.outputs.latest }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -70,11 +71,15 @@ jobs:
 
           if [ "$SAFE_BRANCH" = "main" ]; then
             TAG="v$VERSION"
+            LATEST="true"
           else
             TAG="v$VERSION-$SAFE_BRANCH"
+            LATEST="false"
           fi
+
           echo "Tag: $TAG"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "latest=$LATEST" >> $GITHUB_OUTPUT
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -102,6 +107,7 @@ jobs:
           files: releases/**/*
           tag_name: ${{ needs.build.outputs.tag }}
           name: Tool - ${{ needs.build.outputs.tag }}
+          make_latest: ${{ needs.build.outputs.latest }}
           draft: false
           prerelease: false
           preserve_order: true
