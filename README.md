@@ -6,7 +6,8 @@
 - Tìm workflow `Build and Release`.
 - Chọn `Run workflow`.
 
-![screenshot](docs/Screenshot20250429105517.png)
+![screenshot](docs/Screenshot20250521102347.png)
 
-- Nhập nhánh để build vào `Branch to build`, mặc định là `main`.
+- Chọn branch `spine-tool` để build.
+- Nhập nhánh để build vào `Branch to build`, mặc định là `master`.
 - Nhấn `Run workflow` để bắt đầu.
