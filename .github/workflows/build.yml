@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: "Branch to build (default: main)"
+        description: "Branch to build (default: master)"
         required: true
         type: string
-        default: main
+        default: master
 
 jobs:
   build:
