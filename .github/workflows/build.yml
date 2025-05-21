@@ -28,7 +28,7 @@ jobs:
 
       - name: Clone Repository
         run: |
-          git clone --depth 1 --branch ${{ github.event.inputs.branch }} https://${{ secrets.GH_PAT }}@github.com/${{ secrets.BUILD_REPO }} repo
+          git clone --depth 1 --branch ${{ github.event.inputs.branch }} https://${{ secrets.GH_PAT }}@github.com/${{ secrets.SPINE_REPO }} repo
           cd repo
           git submodule update --init --recursive
 
@@ -115,7 +115,7 @@ jobs:
           draft: false
           prerelease: false
           preserve_order: true
-          repository: ${{ secrets.PUBLISH_REPO }}
+          repository: ${{ secrets.SPINE_REPO }}
 
   cleanup:
     name: Cleanup
