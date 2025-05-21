@@ -57,7 +57,7 @@ jobs:
           BRANCH="${{ github.event.inputs.branch }}"
           SAFE_BRANCH=$(echo "$BRANCH" | sed 's|/|-|g')
 
-          if [ "$SAFE_BRANCH" = "main" ]; then
+          if [ "$SAFE_BRANCH" = "master" ]; then
             TAG="v$VERSION"
             LATEST="true"
           else
